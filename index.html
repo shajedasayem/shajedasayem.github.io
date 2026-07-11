@@ -2,506 +2,201 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex, nofollow, noarchive">
-<meta name="referrer" content="no-referrer">
-<meta name="format-detection" content="telephone=no">
-<meta name="theme-color" content="#060606">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23060606'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23f2f2ef'/%3E%3C/svg%3E">
-<title>Bridge</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Messages</title>
 <style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+
   :root{
-    --bg:#060606;
-    --text-primary:#f2f2ef;
-    --text-secondary:#a8a8a3;
-    --text-tertiary:#8c8c87;
-    --hairline:rgba(255,255,255,0.09);
-    --hairline-strong:rgba(255,255,255,0.18);
-    --mono:ui-monospace,'SFMono-Regular',Menlo,Consolas,'Liberation Mono',monospace;
-    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
-    --max-w:620px;
-    --pad-x:24px;
+    --black:#000000;
+    --white:#ffffff;
+    --gray-1:#0d0d0d;
+    --gray-3:#333333;
+    --gray-4:#7a7a7a;
   }
 
-  *{box-sizing:border-box;}
-  html{background:var(--bg);-webkit-tap-highlight-color:transparent;}
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text-primary);
-    font-family:var(--sans);
-    font-weight:300;
-    line-height:1.5;
-    -webkit-font-smoothing:antialiased;
-    text-rendering:optimizeLegibility;
-    overflow-x:hidden;
+  html,body{
+    height:100%;
+    background:var(--black);
+    color:var(--white);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:14px;
+    line-height:1.4;
   }
 
-  .wrap{max-width:var(--max-w);margin:0 auto;padding:0 var(--pad-x);}
-
-  .noise{
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    z-index:0;
-    opacity:0.035;
-    mix-blend-mode:overlay;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  .app{
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    max-width:420px;
+    margin:0 auto;
+    border-left:1px solid var(--gray-3);
+    border-right:1px solid var(--gray-3);
   }
 
-  header,main,footer{position:relative;z-index:1;}
-
-  .header{padding:72px 0 40px;}
-  .header h1{
-    font-size:clamp(1.55rem,1.1rem + 2.2vw,2.3rem);
-    font-weight:200;
-    letter-spacing:-0.01em;
-    line-height:1.32;
-    margin:0 0 20px;
-    color:var(--text-primary);
-  }
-  .lede{
-    font-size:1rem;
-    color:var(--text-secondary);
-    line-height:1.7;
-    max-width:44ch;
-    margin:0 0 36px;
-    font-weight:300;
+  /* column-reverse anchors scroll to the newest (bottom) message
+     without any JS scroll handling. DOM order is newest-first. */
+  .messages{
+    flex:1;
+    overflow-y:auto;
+    padding:14px;
+    display:flex;
+    flex-direction:column-reverse;
+    align-items:flex-start;
+    gap:2px;
   }
 
-  .status-row{
+  .bubble{
+    width:fit-content;
+    max-width:75%;
+    padding:8px 10px;
+    font-size:13.5px;
+    border:1px solid var(--gray-3);
+    background:var(--gray-1);
+    color:var(--white);
+    word-wrap:break-word;
+  }
+
+  .input-bar{
     display:flex;
     align-items:center;
-    gap:10px;
-    padding-top:20px;
-    border-top:1px solid var(--hairline);
-    font-family:var(--mono);
-    font-size:0.78rem;
-    letter-spacing:0.03em;
-    color:var(--text-tertiary);
-  }
-  .dot{
-    width:6px;height:6px;border-radius:50%;
-    background:var(--text-primary);
-    box-shadow:0 0 6px 1px rgba(242,242,239,0.5);
-    animation:breathe 3.2s ease-in-out infinite;
+    gap:8px;
+    padding:10px 12px;
+    border-top:1px solid var(--gray-3);
+    background:var(--black);
     flex-shrink:0;
   }
-  @keyframes breathe{0%,100%{opacity:0.35;}50%{opacity:1;}}
-  @media (prefers-reduced-motion:reduce){.dot{animation:none;opacity:0.8;}}
 
-  .section{padding:44px 0;}
-  .eyebrow{
-    font-family:var(--mono);
-    font-size:0.7rem;
-    text-transform:uppercase;
-    letter-spacing:0.18em;
-    color:var(--text-tertiary);
-    margin:0 0 12px;
-  }
-  .section h2{
-    font-size:clamp(1.1rem,1rem + 0.6vw,1.35rem);
-    font-weight:300;
-    margin:0 0 16px;
-    color:var(--text-primary);
-  }
-  .body-text{
-    font-size:1rem;
-    line-height:1.75;
-    color:var(--text-secondary);
-    max-width:58ch;
-    margin:0;
-    font-weight:300;
+  .input-bar input{
+    flex:1;
+    background:var(--gray-1);
+    border:1px solid var(--gray-3);
+    color:var(--white);
+    padding:9px 10px;
+    font-size:13.5px;
+    font-family:inherit;
+    outline:none;
   }
 
-  .divider{
-    display:flex;align-items:center;gap:14px;
-    max-width:var(--max-w);margin:0 auto;padding:0 var(--pad-x);
-  }
-  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--hairline);}
-  .divider span{color:var(--text-tertiary);font-size:0.65rem;}
-
-  .channel-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--hairline);}
-  .channel-item{
-    padding:20px 0;
-    border-bottom:1px solid var(--hairline);
-    display:flex;justify-content:space-between;align-items:flex-start;
-    gap:20px;flex-wrap:wrap;
-  }
-  .channel-main{flex:1;min-width:220px;}
-  .channel-platform{margin:0 0 6px;font-size:1rem;font-weight:500;color:var(--text-primary);}
-  .channel-value{
-    margin:0 0 6px;font-family:var(--mono);font-size:0.88rem;
-    color:var(--text-secondary);word-break:break-word;overflow-wrap:anywhere;
-  }
-  .channel-desc{margin:0;font-size:0.85rem;color:var(--text-tertiary);line-height:1.5;}
-  .channel-action{flex-shrink:0;}
-
-  .btn{
-    appearance:none;background:transparent;
-    border:1px solid var(--hairline-strong);
-    color:var(--text-primary);
-    font-family:var(--mono);font-size:0.72rem;
-    text-transform:uppercase;letter-spacing:0.08em;
-    padding:8px 14px;border-radius:2px;cursor:pointer;
-    text-decoration:none;display:inline-block;
-    transition:border-color 0.2s ease,background-color 0.2s ease;
-  }
-  .btn:hover,.btn:focus-visible{border-color:var(--text-primary);background:rgba(255,255,255,0.04);}
-  .btn.copied{color:#0a0a0a;background:var(--text-primary);border-color:var(--text-primary);}
-
-  :focus-visible{outline:1px solid var(--text-primary);outline-offset:3px;}
-
-  .notes-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;}
-  .notes-list li{
-    position:relative;padding-left:20px;
-    font-size:0.95rem;line-height:1.65;color:var(--text-secondary);
-  }
-  .notes-list li::before{content:'—';position:absolute;left:0;color:var(--text-tertiary);}
-
-  .maintenance-panel{padding:80px 0;text-align:center;}
-  .maintenance-panel h2{font-weight:300;}
-  .maintenance-panel .body-text{margin:0 auto;}
-
-  .footer{
-    padding:48px 0 64px;text-align:center;
-    border-top:1px solid var(--hairline);margin-top:20px;
-  }
-  .footer-mark{display:block;color:var(--text-tertiary);font-size:0.75rem;margin-bottom:10px;}
-  .footer p{margin:0;font-size:0.8rem;color:var(--text-tertiary);letter-spacing:0.03em;}
-
-  .visually-hidden{
-    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
-    overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  .input-bar input::placeholder{
+    color:var(--gray-4);
   }
 
-  @media (min-width:700px){
-    .header{padding:96px 0 48px;}
-    .section{padding:56px 0;}
+  .input-bar input:focus{
+    border-color:var(--white);
   }
+
+  .send-btn{
+    background:var(--white);
+    color:var(--black);
+    border:1px solid var(--white);
+    padding:9px 14px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+  }
+
+  .send-btn:active{
+    background:var(--gray-4);
+  }
+
+  .send-btn:disabled{
+    background:var(--gray-1);
+    color:var(--gray-4);
+    border-color:var(--gray-3);
+    cursor:default;
+  }
+
+  .messages::-webkit-scrollbar{ width:6px; }
+  .messages::-webkit-scrollbar-track{ background:var(--black); }
+  .messages::-webkit-scrollbar-thumb{ background:var(--gray-3); }
 </style>
 </head>
 <body>
 
-<div class="noise" aria-hidden="true"></div>
+<div class="app">
 
-<header class="header">
-  <div class="wrap">
-    <h1>If you are here, we need another way to connect.</h1>
-    <p class="lede">A private page for the two of us. If our usual ways of reaching each other ever stop working, whoever opens this will find the latest way to reconnect.</p>
-    <div class="status-row">
-      <span class="dot" aria-hidden="true"></span>
-      <span>Last updated: <span id="last-updated">10 July 2026</span></span>
-    </div>
-  </div>
-</header>
+  <!-- DOM order is newest-first; column-reverse flips it visually
+       so oldest sits at top, newest sits at bottom, scroll anchored to bottom -->
+  <div class="messages" id="messages"></div>
 
-<main id="main-content">
-  <div id="normal-content">
+  <form class="input-bar" id="composer" autocomplete="off">
+    <input
+      type="text"
+      id="msgInput"
+      name="message"
+      placeholder="Type a message"
+      aria-label="Message"
+      autocomplete="off"
+      required
+    />
+    <button type="submit" class="send-btn" id="sendBtn" disabled>Send</button>
+  </form>
 
-    <section class="section" aria-labelledby="message-heading">
-      <div class="wrap">
-        <p class="eyebrow">Status</p>
-        <h2 id="message-heading">Message</h2>
-        <p class="body-text" id="emergency-message">Normal communication may not be available right now. Please follow the latest instructions below.</p>
-      </div>
-    </section>
+</div>
 
-    <div class="divider" aria-hidden="true"><span>&#9670;</span></div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+  import {
+    getDatabase,
+    ref,
+    push,
+    onChildAdded,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
 
-    <section class="section" aria-labelledby="channels-heading">
-      <div class="wrap">
-        <p class="eyebrow">Channels</p>
-        <h2 id="channels-heading">Ways to reach me</h2>
-        <ul class="channel-list" id="channel-list">
-          <li class="channel-item">
-            <div class="channel-main">
-              <p class="channel-platform">Telegram</p>
-              <p class="channel-value">@yourusername</p>
-              <p class="channel-desc">Fastest option if messaging apps are still working.</p>
-            </div>
-            <div class="channel-action">
-              <a class="btn" href="https://t.me/yourusername" target="_blank" rel="noopener noreferrer">Open</a>
-            </div>
-          </li>
-          <li class="channel-item">
-            <div class="channel-main">
-              <p class="channel-platform">Email</p>
-              <p class="channel-value">you@example.com</p>
-              <p class="channel-desc">Checked most regularly. Best for longer updates.</p>
-            </div>
-          </li>
-          <li class="channel-item">
-            <div class="channel-main">
-              <p class="channel-platform">Instagram (backup account)</p>
-              <p class="channel-value">@backup.handle</p>
-              <p class="channel-desc">Use only if this is the one channel still working.</p>
-            </div>
-            <div class="channel-action">
-              <a class="btn" href="https://instagram.com/backup.handle" target="_blank" rel="noopener noreferrer">Open</a>
-            </div>
-          </li>
-          <li class="channel-item">
-            <div class="channel-main">
-              <p class="channel-platform">Phone / SMS</p>
-              <p class="channel-value">+1 000 000 0000</p>
-              <p class="channel-desc">Use if the internet is down entirely.</p>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </section>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBmQN2A5Epw396HK0SO4fyMY2bSa4rty4c",
+    authDomain: "shajedasayem-github-io.firebaseapp.com",
+    databaseURL: "https://shajedasayem-github-io-default-rtdb.firebaseio.com",
+    projectId: "shajedasayem-github-io",
+    storageBucket: "shajedasayem-github-io.firebasestorage.app",
+    messagingSenderId: "496263411280",
+    appId: "1:496263411280:web:29e3ce18038791d222c355"
+  };
 
-    <div class="divider" aria-hidden="true"><span>&#9670;</span></div>
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const messagesRef = ref(db, "messages");
 
-    <section class="section" aria-labelledby="verification-heading">
-      <div class="wrap">
-        <p class="eyebrow">Verification</p>
-        <h2 id="verification-heading">Before you trust anything new</h2>
-        <p class="body-text" id="verification-message">If anything on this page looks unfamiliar — a new number, a new handle, wording that feels off — wait and confirm it through a second channel before trusting it. Only the two of us can edit what's written here.</p>
-      </div>
-    </section>
+  const form = document.getElementById('composer');
+  const messages = document.getElementById('messages');
+  const input = document.getElementById('msgInput');
+  const sendBtn = document.getElementById('sendBtn');
 
-    <div class="divider" aria-hidden="true"><span>&#9670;</span></div>
+  input.addEventListener('input', function(){
+    sendBtn.disabled = input.value.trim().length === 0;
+  });
 
-    <section class="section" aria-labelledby="notes-heading">
-      <div class="wrap">
-        <p class="eyebrow">Notes</p>
-        <h2 id="notes-heading">A few things to remember</h2>
-        <ul class="notes-list" id="notes-list">
-          <li>Don't share or link to this page anywhere public or searchable.</li>
-          <li>If a new contact method appears here that looks unfamiliar, wait and verify it through a second channel before using it.</li>
-          <li>This page collects nothing, needs no login, and is safe to open on any device.</li>
-          <li>If this page is ever unreachable too, fall back to the plan we already agreed on in person.</li>
-        </ul>
-      </div>
-    </section>
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
 
-  </div>
+    const text = input.value.trim();
+    if(!text) return;
 
-  <div class="maintenance-panel" id="maintenance-panel" hidden>
-    <div class="wrap">
-      <p class="eyebrow">Notice</p>
-      <h2>This page is being updated</h2>
-      <p class="body-text" id="maintenance-text">This page is temporarily being updated. Check back shortly, or use the last channel that worked.</p>
-    </div>
-  </div>
-</main>
-
-<footer class="footer">
-  <div class="wrap">
-    <span class="footer-mark" aria-hidden="true">&#9670;</span>
-    <p>Built as a communication bridge.</p>
-  </div>
-</footer>
-
-<div id="copy-live" class="visually-hidden" aria-live="polite" role="status"></div>
-
-<script>
-/* ============================================================
-   CONFIGURATION — edit the values below to update this page.
-   Nothing else in this file needs to change for routine edits.
-   If you change something here, the on-screen defaults above
-   (in the HTML) will only match it for visitors with JavaScript
-   enabled — update the matching text in the HTML too if you
-   want it to look right with JavaScript off.
-   ============================================================ */
-
-var lastUpdated = "10 July 2026";
-
-var maintenanceMode = false;
-var maintenanceMessage = "This page is temporarily being updated. Check back shortly, or use the last channel that worked.";
-
-var emergencyMessage = "Normal communication may not be available right now. Please follow the latest instructions below.";
-
-var verificationMessage = "If anything on this page looks unfamiliar — a new number, a new handle, wording that feels off — wait and confirm it through a second channel before trusting it. Only the two of us can edit what's written here.";
-
-var communicationMethods = [
-  {
-    platform: "Telegram",
-    value: "@yourusername",
-    description: "Fastest option if messaging apps are still working.",
-    type: "link",
-    href: "https://t.me/yourusername"
-  },
-  {
-    platform: "Email",
-    value: "you@example.com",
-    description: "Checked most regularly. Best for longer updates.",
-    type: "copy"
-  },
-  {
-    platform: "Instagram (backup account)",
-    value: "@backup.handle",
-    description: "Use only if this is the one channel still working.",
-    type: "link",
-    href: "https://instagram.com/backup.handle"
-  },
-  {
-    platform: "Phone / SMS",
-    value: "+1 000 000 0000",
-    description: "Use if the internet is down entirely.",
-    type: "copy"
-  }
-];
-
-var notes = [
-  "Don't share or link to this page anywhere public or searchable.",
-  "If a new contact method appears here that looks unfamiliar, wait and verify it through a second channel before using it.",
-  "This page collects nothing, needs no login, and is safe to open on any device.",
-  "If this page is ever unreachable too, fall back to the plan we already agreed on in person."
-];
-
-/* ========================== END CONFIGURATION ========================== */
-
-(function () {
-  "use strict";
-
-  function setText(id, text) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = text;
-  }
-
-  function copyToClipboard(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      return navigator.clipboard.writeText(text);
-    }
-    return new Promise(function (resolve, reject) {
-      var ta = document.createElement("textarea");
-      ta.value = text;
-      ta.setAttribute("readonly", "");
-      ta.style.position = "fixed";
-      ta.style.top = "-1000px";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      try {
-        document.execCommand("copy");
-        resolve();
-      } catch (err) {
-        reject(err);
-      } finally {
-        document.body.removeChild(ta);
-      }
+    push(messagesRef, {
+      text: text,
+      createdAt: serverTimestamp()
     });
-  }
 
-  function announce(message) {
-    var live = document.getElementById("copy-live");
-    if (live) live.textContent = message;
-  }
+    input.value = '';
+    sendBtn.disabled = true;
+    input.focus();
+  });
 
-  function buildChannelList() {
-    var list = document.getElementById("channel-list");
-    if (!list) return;
-    list.innerHTML = "";
+  // fires once per existing message on load, then again for every new one
+  // pushed after — arrival order is oldest to newest, and prepending each
+  // in that order lands the newest message at the bottom (column-reverse)
+  onChildAdded(messagesRef, function(snapshot){
+    const data = snapshot.val();
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = data.text;
+    messages.prepend(bubble);
+  });
 
-    communicationMethods.forEach(function (method) {
-      var li = document.createElement("li");
-      li.className = "channel-item";
-
-      var main = document.createElement("div");
-      main.className = "channel-main";
-
-      var platform = document.createElement("p");
-      platform.className = "channel-platform";
-      platform.textContent = method.platform;
-      main.appendChild(platform);
-
-      var value = document.createElement("p");
-      value.className = "channel-value";
-      value.textContent = method.value;
-      main.appendChild(value);
-
-      if (method.description) {
-        var desc = document.createElement("p");
-        desc.className = "channel-desc";
-        desc.textContent = method.description;
-        main.appendChild(desc);
-      }
-
-      li.appendChild(main);
-
-      if (method.type === "link" && method.href) {
-        var action = document.createElement("div");
-        action.className = "channel-action";
-        var a = document.createElement("a");
-        a.className = "btn";
-        a.href = method.href;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.textContent = "Open";
-        action.appendChild(a);
-        li.appendChild(action);
-      } else {
-        var action2 = document.createElement("div");
-        action2.className = "channel-action";
-        var btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "btn";
-        var originalLabel = "Copy";
-        btn.textContent = originalLabel;
-        btn.addEventListener("click", function () {
-          copyToClipboard(method.value).then(function () {
-            btn.textContent = "Copied";
-            btn.classList.add("copied");
-            announce(method.platform + " copied to clipboard.");
-            setTimeout(function () {
-              btn.textContent = originalLabel;
-              btn.classList.remove("copied");
-            }, 1600);
-          }).catch(function () {
-            announce("Could not copy automatically. Please select the text manually.");
-          });
-        });
-        action2.appendChild(btn);
-        li.appendChild(action2);
-      }
-
-      list.appendChild(li);
-    });
-  }
-
-  function buildNotesList() {
-    var list = document.getElementById("notes-list");
-    if (!list) return;
-    list.innerHTML = "";
-    notes.forEach(function (note) {
-      var li = document.createElement("li");
-      li.textContent = note;
-      list.appendChild(li);
-    });
-  }
-
-  function applyMaintenanceMode() {
-    var normal = document.getElementById("normal-content");
-    var panel = document.getElementById("maintenance-panel");
-    if (!normal || !panel) return;
-    if (maintenanceMode) {
-      normal.hidden = true;
-      panel.hidden = false;
-      setText("maintenance-text", maintenanceMessage);
-    } else {
-      normal.hidden = false;
-      panel.hidden = true;
-    }
-  }
-
-  function init() {
-    setText("last-updated", lastUpdated);
-    setText("emergency-message", emergencyMessage);
-    setText("verification-message", verificationMessage);
-    buildChannelList();
-    buildNotesList();
-    applyMaintenanceMode();
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-})();
+  input.focus();
 </script>
 
 </body>
